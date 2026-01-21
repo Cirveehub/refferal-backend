@@ -17,7 +17,7 @@ COPY . .
 
 # Build the application
 # CGO_ENABLED=0 creates a statically linked binary
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 # Run stage
 FROM gcr.io/distroless/static-debian12

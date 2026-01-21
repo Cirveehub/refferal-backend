@@ -102,18 +102,23 @@ func (r *PayoutRepository) ListAll(ctx context.Context, page, perPage int, statu
 	if status != nil {
 		countQuery = `SELECT COUNT(*) FROM payouts WHERE status = $1`
 		query = `
-			SELECT id, user_id, amount, status, approved_by, created_at, paid_at
-			FROM payouts WHERE status = $1
-			ORDER BY created_at DESC
+			SELECT p.id, p.user_id, p.amount, p.status, p.approved_by, p.created_at, p.paid_at,
+			       u.name, u.email, u.phone, u.referral_code, u.bank_name, u.account_number, u.account_name
+			FROM payouts p
+			LEFT JOIN users u ON p.user_id = u.id
+			WHERE p.status = $1
+			ORDER BY p.created_at DESC
 			LIMIT $2 OFFSET $3
 		`
 		args = []interface{}{*status, perPage, offset}
 	} else {
 		countQuery = `SELECT COUNT(*) FROM payouts`
 		query = `
-			SELECT id, user_id, amount, status, approved_by, created_at, paid_at
-			FROM payouts
-			ORDER BY created_at DESC
+			SELECT p.id, p.user_id, p.amount, p.status, p.approved_by, p.created_at, p.paid_at,
+			       u.name, u.email, u.phone, u.referral_code, u.bank_name, u.account_number, u.account_name
+			FROM payouts p
+			LEFT JOIN users u ON p.user_id = u.id
+			ORDER BY p.created_at DESC
 			LIMIT $1 OFFSET $2
 		`
 		args = []interface{}{perPage, offset}
@@ -139,9 +144,12 @@ func (r *PayoutRepository) ListAll(ctx context.Context, page, perPage int, statu
 	var payouts []models.Payout
 	for rows.Next() {
 		var p models.Payout
+		p.User = &models.User{}
 		if err := rows.Scan(
 			&p.ID, &p.UserID, &p.Amount, &p.Status,
 			&p.ApprovedBy, &p.CreatedAt, &p.PaidAt,
+			&p.User.Name, &p.User.Email, &p.User.Phone, &p.User.ReferralCode,
+			&p.User.BankName, &p.User.AccountNumber, &p.User.AccountName,
 		); err != nil {
 			return nil, 0, err
 		}

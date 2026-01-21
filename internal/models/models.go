@@ -30,17 +30,21 @@ type User struct {
 }
 
 type Referral struct {
-	ID            uuid.UUID  `json:"id"`
-	ReferrerID    *uuid.UUID `json:"referrer_id"`
-	ReferrerName  string     `json:"referrer_name,omitempty"`
-	ReferredName  string     `json:"referred_name"`
-	ReferredEmail string     `json:"referred_email"`
-	ReferredPhone string     `json:"referred_phone"`
-	Course        string     `json:"course"`
-	CoursePrice   int64      `json:"course_price"`
-	Earnings      int64      `json:"earnings"`
-	Status        string     `json:"status"` // pending, paid
-	CreatedAt     time.Time  `json:"created_at"`
+	ID              uuid.UUID  `json:"id"`
+	ReferrerID      *uuid.UUID `json:"referrer_id"`
+	ReferrerName    string     `json:"referrer_name,omitempty"`
+	ReferredName    string     `json:"referred_name"`
+	ReferredEmail   string     `json:"referred_email"`
+	ReferredPhone   string     `json:"referred_phone"`
+	Course          string     `json:"course"`
+	CoursePrice     int64      `json:"course_price"`
+	Earnings        int64      `json:"earnings"`
+	Status          string     `json:"status"` // pending, paid
+	CreatedAt       time.Time  `json:"created_at"`
+	ReferrerBank    string     `json:"referrer_bank,omitempty"`
+	ReferrerAccNo   string     `json:"referrer_account_number,omitempty"`
+	ReferrerAccName string     `json:"referrer_account_name,omitempty"`
+	ReferralCode    string     `json:"referral_code,omitempty"`
 }
 
 type ReferrerStats struct {
@@ -69,6 +73,7 @@ type Payout struct {
 	ApprovedBy *uuid.UUID   `json:"approved_by,omitempty"`
 	CreatedAt  time.Time    `json:"created_at"`
 	PaidAt     *time.Time   `json:"paid_at,omitempty"`
+	User       *User        `json:"user,omitempty"`
 }
 
 // Request/Response DTOs

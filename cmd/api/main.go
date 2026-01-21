@@ -38,7 +38,7 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	//  database
+	// Connect to database
 	db, err := database.New(cfg.Database.URL)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -46,7 +46,7 @@ func main() {
 	defer db.Close()
 	log.Println("Connected to database")
 
-	//  Redis
+	// Connect to Redis
 	redisCache, err := cache.New(cfg.Redis.URL)
 	if err != nil {
 		log.Fatalf("Failed to connect to Redis: %v", err)
@@ -54,7 +54,7 @@ func main() {
 	defer redisCache.Close()
 	log.Println("Connected to Redis")
 
-	// Initialize JWT manager
+	// Initialize components
 	jwtManager := utils.NewJWTManager(
 		cfg.JWT.Secret,
 		cfg.JWT.RefreshSecret,
@@ -100,7 +100,7 @@ func main() {
 	r.Use(middleware.SecureHeaders)
 	r.Use(rateLimiter.Limit)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{cfg.CORS.Origin},
+		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		ExposedHeaders:   []string{"Link", "X-RateLimit-Limit", "X-RateLimit-Remaining"},
@@ -122,7 +122,7 @@ func main() {
 
 	// API v1 routes
 	r.Route("/api/v1", func(r chi.Router) {
-		// Auth routes (
+		// Auth routes (public, with stricter rate limiting)
 		r.Route("/auth", func(r chi.Router) {
 			r.Use(authRateLimiter.Limit) // 5 requests per minute
 			r.Post("/register", authHandler.Register)
@@ -132,19 +132,19 @@ func main() {
 			r.Post("/reset-password", authHandler.ResetPassword)
 		})
 
-		// Student 
+		// Student routes (public)
 		r.Route("/students", func(r chi.Router) {
 			r.Post("/register", studentHandler.RegisterStudent)
 			r.Post("/track-click", studentHandler.TrackClick)
 		})
 
-		// Banks routes 
+		// Banks routes (public - Paystack proxy)
 		r.Route("/banks", func(r chi.Router) {
 			r.Get("/", paystackHandler.ListBanks)
 			r.Get("/resolve", paystackHandler.ResolveAccount)
 		})
 
-		// Admin routes
+		// Admin routes (authenticated + admin only)
 		r.Route("/admin", func(r chi.Router) {
 			r.Use(authMiddleware.Authenticate)
 			r.Use(authMiddleware.RequireRole(models.RoleAdmin))
@@ -161,7 +161,7 @@ func main() {
 			r.Patch("/payouts/{id}", adminHandler.UpdatePayoutStatus)
 		})
 
-		// User routes 
+		// User routes (authenticated + user only)
 		r.Route("/user", func(r chi.Router) {
 			r.Use(authMiddleware.Authenticate)
 			r.Use(authMiddleware.RequireRole(models.RoleUser))
@@ -190,7 +190,7 @@ func main() {
 		}
 	}()
 
-	//  interrupt signal
+	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit

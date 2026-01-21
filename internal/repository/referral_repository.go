@@ -106,7 +106,10 @@ func (r *ReferralRepository) ListAll(ctx context.Context, page, perPage int) ([]
 	}
 
 	query := `
-		SELECT r.id, r.referrer_id, COALESCE(u.name, '-') as referrer_name, r.referred_name, r.referred_email, r.referred_phone, r.course, r.course_price, r.earnings, r.status, r.created_at
+		SELECT 
+			r.id, r.referrer_id, COALESCE(u.name, '-') as referrer_name, 
+			r.referred_name, r.referred_email, r.referred_phone, r.course, r.course_price, r.earnings, r.status, r.created_at,
+			COALESCE(u.bank_name, ''), COALESCE(u.account_number, ''), COALESCE(u.account_name, ''), COALESCE(u.referral_code, '')
 		FROM referrals r
 		LEFT JOIN users u ON r.referrer_id = u.id
 		ORDER BY r.created_at DESC
@@ -126,6 +129,7 @@ func (r *ReferralRepository) ListAll(ctx context.Context, page, perPage int) ([]
 			&ref.ID, &ref.ReferrerID, &ref.ReferrerName, &ref.ReferredName, &ref.ReferredEmail,
 			&ref.ReferredPhone, &ref.Course, &ref.CoursePrice, &ref.Earnings,
 			&ref.Status, &ref.CreatedAt,
+			&ref.ReferrerBank, &ref.ReferrerAccNo, &ref.ReferrerAccName, &ref.ReferralCode,
 		); err != nil {
 			return nil, 0, err
 		}
@@ -212,7 +216,7 @@ func (r *ReferralRepository) GetReferrersStats(ctx context.Context, page, perPag
 	offset := (page - 1) * perPage
 
 	// Count users who have a referral code
-	countQuery := `SELECT COUNT(*) FROM users WHERE referral_code IS NOT NULL AND referral_code != ''`
+	countQuery := `SELECT COUNT(*) FROM users WHERE referral_code IS NOT NULL AND referral_code != '' AND role != 'admin'`
 	var total int64
 	if err := r.db.Pool.QueryRow(ctx, countQuery).Scan(&total); err != nil {
 		return nil, 0, err
