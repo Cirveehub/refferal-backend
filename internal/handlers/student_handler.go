@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/cirvee/referral-backend/internal/config"
 	"github.com/cirvee/referral-backend/internal/models"
@@ -68,6 +69,10 @@ func (h *StudentHandler) RegisterStudent(w http.ResponseWriter, r *http.Request)
 		respondError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
+
+	// Trim whitespace
+	req.ReferralCode = strings.TrimSpace(req.ReferralCode)
+	req.Course = strings.TrimSpace(req.Course)
 
 	if err := h.validate.Struct(req); err != nil {
 		respondError(w, http.StatusBadRequest, formatValidationError(err))
@@ -164,6 +169,8 @@ func (h *StudentHandler) TrackClick(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
+
+	req.ReferralCode = strings.TrimSpace(req.ReferralCode)
 
 	if req.ReferralCode == "" {
 		respondError(w, http.StatusBadRequest, "referral_code is required")
