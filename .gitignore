@@ -7,3 +7,6 @@ coverage.out
 *.exe
 *.test
 *.prof
+
+# Binaries
+api
