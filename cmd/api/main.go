@@ -21,6 +21,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 // @title Cirvee Referral System API
@@ -45,6 +48,13 @@ func main() {
 	}
 	defer db.Close()
 	log.Println("Connected to database")
+
+	// Run migrations
+	log.Println("Running migrations...")
+	if err := runMigrations(cfg.Database.URL); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
+	log.Println("Migrations completed successfully")
 
 	// Connect to Redis
 	redisCache, err := cache.New(cfg.Redis.URL)
@@ -204,4 +214,20 @@ func main() {
 	}
 
 	log.Println("Server exited properly")
+}
+
+func runMigrations(databaseURL string) error {
+	m, err := migrate.New(
+		"file://migrations",
+		databaseURL,
+	)
+	if err != nil {
+		return err
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+
+	return nil
 }

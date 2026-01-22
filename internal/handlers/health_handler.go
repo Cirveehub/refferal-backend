@@ -35,13 +35,13 @@ func (h *HealthHandler) Health(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.db.Health(ctx); err != nil {
 		response["status"] = "unhealthy"
-		response["database"] = "error"
+		response["database"] = "error: " + err.Error()
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
 
 	if err := h.cache.Health(ctx); err != nil {
 		response["status"] = "unhealthy"
-		response["cache"] = "error"
+		response["cache"] = "error: " + err.Error()
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
 

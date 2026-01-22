@@ -90,7 +90,7 @@ func (h *StudentHandler) RegisterStudent(w http.ResponseWriter, r *http.Request)
 		referrer, err := h.userRepo.GetByReferralCode(r.Context(), req.ReferralCode)
 		if err != nil {
 			if err != repository.ErrUserNotFound {
-				respondError(w, http.StatusInternalServerError, "failed to verify referral code")
+				respondError(w, http.StatusInternalServerError, "failed to verify referral code: "+err.Error())
 				return
 			}
 			// Referral code invalid: proceed as direct signup (referrerID remains nil)
@@ -117,7 +117,7 @@ func (h *StudentHandler) RegisterStudent(w http.ResponseWriter, r *http.Request)
 	}
 
 	if err := h.referralRepo.Create(r.Context(), referral); err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to create referral record")
+		respondError(w, http.StatusInternalServerError, "failed to create referral record: "+err.Error())
 		return
 	}
 	// Invalidate dashboard cache significantly to show new stats immediately
@@ -179,7 +179,7 @@ func (h *StudentHandler) TrackClick(w http.ResponseWriter, r *http.Request) {
 
 	// Record the click
 	if err := h.clickRepo.RecordClick(r.Context(), req.ReferralCode, ipAddress, userAgent, nil); err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to record click")
+		respondError(w, http.StatusInternalServerError, "failed to record click: "+err.Error())
 		return
 	}
 

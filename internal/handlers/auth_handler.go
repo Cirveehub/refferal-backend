@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -63,7 +64,18 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 			respondError(w, http.StatusConflict, "email already exists")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "failed to register user")
+		if err == repository.ErrUserExists {
+			respondError(w, http.StatusConflict, "user already exists")
+			return
+		}
+		if err == repository.ErrReferralCodeExists {
+			respondError(w, http.StatusConflict, "referral code collision, please try again")
+			return
+		}
+
+		// LOGGING ADDED FOR DEBUGGING
+		fmt.Printf("[Register Error] %v\n", err)
+		respondError(w, http.StatusInternalServerError, "failed to register user: "+err.Error())
 		return
 	}
 
@@ -106,7 +118,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 			respondError(w, http.StatusForbidden, "user account is blocked")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "failed to login")
+		respondError(w, http.StatusInternalServerError, "failed to login: "+err.Error())
 		return
 	}
 
@@ -138,7 +150,7 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 
 	response, err := h.authService.RefreshToken(r.Context(), req.RefreshToken)
 	if err != nil {
-		respondError(w, http.StatusUnauthorized, "invalid or expired refresh token")
+		respondError(w, http.StatusUnauthorized, "invalid or expired refresh token: "+err.Error())
 		return
 	}
 
@@ -180,7 +192,7 @@ func (h *AuthHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	// Create reset token (expires in 1 hour)
 	token, err := h.resetTokenRepo.Create(r.Context(), user.ID, time.Hour)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to create reset token")
+		respondError(w, http.StatusInternalServerError, "failed to create reset token: "+err.Error())
 		return
 	}
 
@@ -221,13 +233,13 @@ func (h *AuthHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 			respondError(w, http.StatusBadRequest, "invalid or expired reset token")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "failed to validate token")
+		respondError(w, http.StatusInternalServerError, "failed to validate token: "+err.Error())
 		return
 	}
 
 	// Update password
 	if err := h.authService.UpdatePassword(r.Context(), resetToken.UserID, req.NewPassword); err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to update password")
+		respondError(w, http.StatusInternalServerError, "failed to update password: "+err.Error())
 		return
 	}
 

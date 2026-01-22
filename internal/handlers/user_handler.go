@@ -45,7 +45,7 @@ func (h *UserHandler) GetDashboard(w http.ResponseWriter, r *http.Request) {
 
 	totalCount, totalEarnings, pendingEarnings, err := h.referralRepo.GetStatsByReferrer(r.Context(), claims.UserID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to get stats")
+		respondError(w, http.StatusInternalServerError, "failed to get stats: "+err.Error())
 		return
 	}
 
@@ -91,7 +91,7 @@ func (h *UserHandler) GetMyReferrals(w http.ResponseWriter, r *http.Request) {
 
 	referrals, total, err := h.referralRepo.ListByReferrer(r.Context(), claims.UserID, page, perPage)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to get referrals")
+		respondError(w, http.StatusInternalServerError, "failed to get referrals: "+err.Error())
 		return
 	}
 
@@ -127,7 +127,7 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.userRepo.GetByID(r.Context(), claims.UserID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to get profile")
+		respondError(w, http.StatusInternalServerError, "failed to get profile: "+err.Error())
 		return
 	}
 
@@ -188,7 +188,7 @@ func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.userRepo.Update(r.Context(), user); err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to update profile")
+		respondError(w, http.StatusInternalServerError, "failed to update profile: "+err.Error())
 		return
 	}
 

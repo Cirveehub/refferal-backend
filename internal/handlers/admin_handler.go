@@ -81,7 +81,7 @@ func (h *AdminHandler) GetReferrals(w http.ResponseWriter, r *http.Request) {
 	// Revert to ListAll for raw transactions (used by Dashboard)
 	referrals, total, err := h.referralRepo.ListAll(r.Context(), page, perPage)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to get referrals")
+		respondError(w, http.StatusInternalServerError, "failed to get referrals: "+err.Error())
 		return
 	}
 
@@ -123,7 +123,7 @@ func (h *AdminHandler) GetReferrers(w http.ResponseWriter, r *http.Request) {
 
 	referrers, total, err := h.referralRepo.GetReferrersStats(r.Context(), page, perPage)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to get referrers")
+		respondError(w, http.StatusInternalServerError, "failed to get referrers: "+err.Error())
 		return
 	}
 
@@ -166,7 +166,7 @@ func (h *AdminHandler) GetStudents(w http.ResponseWriter, r *http.Request) {
 	// Use ListAll to get all students (referrals)
 	students, total, err := h.referralRepo.ListAll(r.Context(), page, perPage)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to get students")
+		respondError(w, http.StatusInternalServerError, "failed to get students: "+err.Error())
 		return
 	}
 
@@ -215,7 +215,7 @@ func (h *AdminHandler) GetPayouts(w http.ResponseWriter, r *http.Request) {
 
 	payouts, total, err := h.payoutRepo.ListAll(r.Context(), page, perPage, statusFilter)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to get payouts")
+		respondError(w, http.StatusInternalServerError, "failed to get payouts: "+err.Error())
 		return
 	}
 
@@ -269,7 +269,7 @@ func (h *AdminHandler) UpdatePayoutStatus(w http.ResponseWriter, r *http.Request
 			respondError(w, http.StatusNotFound, "payout not found")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "failed to update payout")
+		respondError(w, http.StatusInternalServerError, "failed to update payout: "+err.Error())
 		return
 	}
 
@@ -297,7 +297,7 @@ func (h *AdminHandler) MarkReferrerPaid(w http.ResponseWriter, r *http.Request) 
 
 	err = h.referralRepo.MarkReferralsAsPaid(r.Context(), referrerID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to mark referrals as paid")
+		respondError(w, http.StatusInternalServerError, "failed to mark referrals as paid: "+err.Error())
 		return
 	}
 
@@ -342,7 +342,7 @@ func (h *AdminHandler) BlockUser(w http.ResponseWriter, r *http.Request) {
 			respondError(w, http.StatusNotFound, "user not found")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "failed to update user status")
+		respondError(w, http.StatusInternalServerError, "failed to update user status: "+err.Error())
 		return
 	}
 
@@ -387,7 +387,7 @@ func (h *AdminHandler) UpdateReferralStatus(w http.ResponseWriter, r *http.Reque
 			respondError(w, http.StatusNotFound, "referral not found")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "failed to update referral status")
+		respondError(w, http.StatusInternalServerError, "failed to update referral status: "+err.Error())
 		return
 	}
 
@@ -423,7 +423,7 @@ func (h *AdminHandler) MarkReferralPaid(w http.ResponseWriter, r *http.Request) 
 			respondError(w, http.StatusNotFound, "referral not found or already paid")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "failed to mark referral as paid")
+		respondError(w, http.StatusInternalServerError, "failed to mark referral as paid: "+err.Error())
 	}
 
 	// Invalidate dashboard cache

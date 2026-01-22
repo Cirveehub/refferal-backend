@@ -66,7 +66,7 @@ func (h *PaystackHandler) ListBanks(w http.ResponseWriter, r *http.Request) {
 
 	req, err := http.NewRequestWithContext(r.Context(), "GET", url, nil)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to create request")
+		respondError(w, http.StatusInternalServerError, "failed to create request: "+err.Error())
 		return
 	}
 
@@ -76,14 +76,14 @@ func (h *PaystackHandler) ListBanks(w http.ResponseWriter, r *http.Request) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to fetch banks")
+		respondError(w, http.StatusInternalServerError, "failed to fetch banks: "+err.Error())
 		return
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to read response")
+		respondError(w, http.StatusInternalServerError, "failed to read response: "+err.Error())
 		return
 	}
 
@@ -94,7 +94,7 @@ func (h *PaystackHandler) ListBanks(w http.ResponseWriter, r *http.Request) {
 
 	var paystackResp PaystackBankListResponse
 	if err := json.Unmarshal(body, &paystackResp); err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to parse response")
+		respondError(w, http.StatusInternalServerError, "failed to parse response: "+err.Error())
 		return
 	}
 
@@ -144,7 +144,7 @@ func (h *PaystackHandler) ResolveAccount(w http.ResponseWriter, r *http.Request)
 
 	req, err := http.NewRequestWithContext(r.Context(), "GET", url, nil)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to create request")
+		respondError(w, http.StatusInternalServerError, "failed to create request: "+err.Error())
 		return
 	}
 
@@ -154,14 +154,14 @@ func (h *PaystackHandler) ResolveAccount(w http.ResponseWriter, r *http.Request)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to resolve account")
+		respondError(w, http.StatusInternalServerError, "failed to resolve account: "+err.Error())
 		return
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to read response")
+		respondError(w, http.StatusInternalServerError, "failed to read response: "+err.Error())
 		return
 	}
 
@@ -175,13 +175,16 @@ func (h *PaystackHandler) ResolveAccount(w http.ResponseWriter, r *http.Request)
 			message = msg
 		}
 
+		// LOGGING ADDED FOR DEBUGGING
+		fmt.Printf("[Paystack Error] Status: %d, Body: %s\n", resp.StatusCode, string(body))
+
 		respondError(w, http.StatusBadRequest, message)
 		return
 	}
 
 	var paystackResp PaystackResolveResponse
 	if err := json.Unmarshal(body, &paystackResp); err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to parse response")
+		respondError(w, http.StatusInternalServerError, "failed to parse response: "+err.Error())
 		return
 	}
 
