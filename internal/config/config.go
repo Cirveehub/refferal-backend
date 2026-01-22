@@ -100,7 +100,7 @@ func Load() (*Config, error) {
 			RefreshExpiry: refreshExpiry,
 		},
 		CORS: CORSConfig{
-			Origin: getEnv("CORS_ORIGIN", "http://localhost:5173"),
+			Origin: getEnv("CORS_ORIGIN", "http://localhost:5173,https://referral.cirvee.com"),
 		},
 		Admin: AdminConfig{
 			Email:    getEnv("ADMIN_EMAIL", "admin@cirvee.com"),

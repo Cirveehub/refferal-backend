@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Course prices and earnings percentages (can be moved to config)
+// Course prices and earnings percentages
 var coursePrices = map[string]int64{
 	"Web Development":    750000,
 	"Data Science":       400000,
